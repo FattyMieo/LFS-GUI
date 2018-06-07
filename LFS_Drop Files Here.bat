@@ -30,7 +30,7 @@ start .\%sh%
 goto end
 
 :with_parameter
-start .\%sh% "%~1" --windows
+start .\%sh% --windows %*
 goto end
 
 :end

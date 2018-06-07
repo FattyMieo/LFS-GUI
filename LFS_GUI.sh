@@ -12,7 +12,7 @@
 REPO_PATH=".."
 
 # Color Codes
-RED='\033[1;31m'
+RED='\033[0;31m'
 GREEN='\033[1;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[1;36m'
@@ -27,6 +27,24 @@ title()
 	echo "=============================="
 	echo -e "${NOCOLOR}\c"
 	echo ""
+}
+
+git_lfs_lock()
+{
+	echo -e "${RED}Locking ${MAGENTA}${1}${RED}...${NOCOLOR}"
+	git lfs lock "./${1}"
+}
+
+git_lfs_unlock()
+{
+	echo -e "${GREEN}Unlocking ${MAGENTA}${1}${GREEN}...${NOCOLOR}"
+	git lfs unlock "./${1}"
+}
+
+git_lfs_unlock_id()
+{
+	echo -e "${GREEN}Unlocking ID ${MAGENTA}${1}${GREEN}...${NOCOLOR}"
+	git lfs unlock "--id=$id"
 }
 
 lock_file()
@@ -51,7 +69,7 @@ lock_file()
 	actual_path="${actual_path#./}"			# Remove any . prefix
 	actual_path="${actual_path##$PWD/}"		# Remove PWD path
 	
-	git lfs lock "./$actual_path"
+	git_lfs_lock "$actual_path"
 }
 
 unlock_file()
@@ -72,7 +90,8 @@ unlock_file()
 	
 	if [[ "$input" = --id=* ]]
 	then
-		git lfs unlock "$input"
+		id="${input#--id=}"
+		git_lfs_unlock_id "$id"
 	else
 		# Path Conversion
 		actual_path="${input%\'}"				# Remove quote suffix
@@ -80,28 +99,38 @@ unlock_file()
 		actual_path="${actual_path#./}"			# Remove any ./ prefix
 		actual_path="${actual_path##$PWD/}"		# Remove PWD path
 		
-		git lfs unlock "./$actual_path"
+		git_lfs_unlock "$actual_path"
 	fi
 }
 
 show_locks()
 {
 	echo "\$ git lfs locks"
+	echo ""
 	echo -e "${YELLOW}\c"
 	echo "Loading locked files..."
 	echo -e "${NOCOLOR}\c"
 	echo ""
+	echo "=========="
+	echo ""
 	git lfs locks
+	echo ""
+	echo "=========="
 }
 
 show_tracked()
 {
 	echo "\$ git lfs ls-files"
+	echo ""
 	echo -e "${YELLOW}\c"
 	echo "Loading all tracked files in the project..."
 	echo -e "${NOCOLOR}\c"
 	echo ""
+	echo "=========="
+	echo ""
 	git lfs ls-files
+	echo ""
+	echo "=========="
 }
 
 main_menu()
@@ -153,51 +182,78 @@ quick_action_menu()
 	then
 		return
 	fi
-	
+
 	# Determine path type
 	path_type="posix"
 	
-	if [ ! -z "$2" ]
+	if [ "$1" = "--windows" ]
 	then
-		if [ "$2" = "--windows" ]
-		then
-			path_type="windows"
-		elif [ "$2" = "--posix" ]
-		then
-			path_type="posix"
-		fi
+		path_type="windows"
+		shift
+	elif [ "$1" = "--posix" ]
+	then
+		path_type="posix"
+		shift
 	fi
 	
-	# Path Conversion
-	if [ "$path_type" = "windows" ]
-	then
-		# Windows PATH to POSIX
-		actual_path="${1//\\/\/}"				# Swap \ to /
-		actual_path="${actual_path//:\//\/}"	# Swap :/ to /
-		actual_path="/${actual_path,}"			# Add "/" and lowercase firts letter
-		actual_path="${actual_path##$PWD/}"		# Remove PWD path
-	elif [ "$path_type" = "posix" ]
-	then
-		# POSIX direct copy-paste
-		actual_path="${1%\'}"					# Remove quote suffix
-		actual_path="${actual_path#\'}"			# Remove quote prefix
-		actual_path="${actual_path#./}"			# Remove any ./ prefix
-		actual_path="${actual_path##$PWD/}"		# Remove PWD path
-	else
-		actual_path="${1}"
-	fi
+	declare -a path_array # Declare an array externally
+	count=0
+	
+	while [ "x${1}" != "x" ]
+	do
+		# Path Conversion
+		if [ "$path_type" = "windows" ]
+		then
+			# Windows PATH to POSIX
+			actual_path="${1%\"}"					# Remove quote suffix
+			actual_path="${actual_path#\"}"			# Remove quote prefix
+			actual_path="${1//\\/\/}"				# Swap \ to /
+			actual_path="${actual_path//:\//\/}"	# Swap :/ to /
+			actual_path="/${actual_path,}"			# Add "/" and lowercase firts letter
+			actual_path="${actual_path##$PWD/}"		# Remove PWD path
+		elif [ "$path_type" = "posix" ]
+		then
+			# POSIX direct copy-paste
+			actual_path="${1%\'}"					# Remove quote suffix
+			actual_path="${actual_path#\'}"			# Remove quote prefix
+			actual_path="${actual_path#./}"			# Remove any ./ prefix
+			actual_path="${actual_path##$PWD/}"		# Remove PWD path
+		else
+			actual_path="${1}"
+		fi
+		
+		path_array[$count]=$actual_path
+		
+		count=$(( $count + 1 ))
+		shift
+	done
+	
+	echo -e "${GREEN}LFS-GUI${NOCOLOR}: File Drag&Drop detected"
+	echo ""
 	
 	exit=0
 	while [ $exit = 0 ]
 	do
 		title
 		
-		echo -e "File: ${MAGENTA}${actual_path}${NOCOLOR}" # Show relative path to file
+		echo "Files(s):" # Show relative path to file
+		
+		echo -e "${MAGENTA}\c"
+		count=0
+		while [ "x${path_array[count]}" != "x" ]
+		do
+			echo "${path_array[count]}"
+			count=$(( $count + 1 ))
+		done
+		echo -e "${NOCOLOR}\c"
+		
 		#echo "File: ${1##*/}" # Show only filename
 		echo ""
 		echo -e "${CYAN}\c"
 		echo "1. Lock"
 		echo "2. Unlock"
+		echo "3. View Locked Files"
+		echo "4. View ALL Tracked Files"
 		echo ""
 		echo "0. Cancel"
 		echo -e "${NOCOLOR}\c"
@@ -207,12 +263,30 @@ quick_action_menu()
 		echo ""
 		  if [ "$input" = 1 ]
 		then
-			git lfs lock "./$actual_path"
+			count=0
+			while [ "x${path_array[count]}" != "x" ]
+			do
+				git_lfs_lock "${path_array[count]}"
+				count=$(( $count + 1 ))
+			done
+			
 			exit=1
 		elif [ "$input" = 2 ]
 		then
-			git lfs unlock "./$actual_path"
+			count=0
+			while [ "x${path_array[count]}" != "x" ]
+			do
+				git_lfs_unlock "${path_array[count]}"
+				count=$(( $count + 1 ))
+			done
+			
 			exit=1
+		elif [ "$input" = 3 ]
+		then
+			show_locks
+		elif [ "$input" = 4 ]
+		then
+			show_tracked
 		elif [ "$input" = 0 ]
 		then
 			exit=1
@@ -222,8 +296,11 @@ quick_action_menu()
 		fi
 		
 		echo ""
-		read -n 1 -s -r -p "Press any key to continue..."
-		echo ""
+		
+		if [ $exit = 1 ]
+		then
+			read -n 1 -s -r -p "Press any key to continue..."
+		fi
 	done
 }
 
@@ -240,7 +317,7 @@ fi
 
 if [ ! -z "$1" ]
 then
-	quick_action_menu "$1" "$2"
+	quick_action_menu "$@" # Pass in all arguments
 else
 	main_menu
 fi
