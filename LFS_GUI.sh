@@ -1,18 +1,19 @@
 #!/bin/sh
 
 #####################
-# LFS FILE LOCK		#
+# LFS GUI			#
 # BY FattyMieo		#
 #					#
-# VERSION: 1.0		#
-# DATE: 30/05/2018	#
+# VERSION: 2.0		#
+# DATE: 04/10/2018	#
 #####################
 
 # Config
 REPO_PATH=".."
 
 # Color Codes
-RED='\033[0;31m'
+RED='\033[1;31m'
+DARKRED='\033[0;31m'
 GREEN='\033[1;32m'
 YELLOW='\033[1;33m'
 CYAN='\033[1;36m'
@@ -29,10 +30,32 @@ title()
 	echo ""
 }
 
+git_lfs_verify()
+{
+	echo -e "${YELLOW}Verifying ${MAGENTA}${1}${YELLOW}...${NOCOLOR}"
+	verify_cmd=$(git log --follow --oneline HEAD...origin/master -- "./${1}")
+	if [[ -z "${verify_cmd}" ]]
+	then
+		echo "The file is safe to edit and may not cause future merge conflicts"
+	else
+		echo "This file is identified in the following commits:"
+		git log --follow --oneline HEAD...origin/master -- "./${1}"
+		echo ""
+		echo -e "${RED}[WARNING] It's not safe to edit this file from the current HEAD!${NOCOLOR}"
+		echo ""
+	fi
+}
+
 git_lfs_lock()
 {
-	echo -e "${RED}Locking ${MAGENTA}${1}${RED}...${NOCOLOR}"
-	git lfs lock "./${1}"
+	git_lfs_verify "./${1}"
+	echo -e "${DARKRED}Locking ${MAGENTA}${1}${DARKRED}...${NOCOLOR}"
+	if [[ -z "${verify_cmd}" ]]
+	then
+		git lfs lock "./${1}"
+	else
+		echo "Failed to lock unsafe file"
+	fi
 }
 
 git_lfs_unlock()
@@ -47,9 +70,34 @@ git_lfs_unlock_id()
 	git lfs unlock "--id=$id"
 }
 
+verify_file()
+{
+	echo -e "${YELLOW}\c"
+	echo "=============================="
+	echo "|       Verifying File       |"
+	echo "=============================="
+	echo -e "${NOCOLOR}\c"
+	echo ""
+	echo -e "${CYAN}\c"
+	echo "Tips: Drag the file into the windows to directly copy the path."
+	echo "Type in the file's path:"
+	echo -e "${NOCOLOR}\c"
+	echo ""
+	read -e -p "\$ git lfs verify " input
+	echo ""
+	
+	# Path Conversion
+	actual_path="${input%\'}"				# Remove quote suffix
+	actual_path="${actual_path#\'}"			# Remove quote prefix
+	actual_path="${actual_path#./}"			# Remove any . prefix
+	actual_path="${actual_path##$PWD/}"		# Remove PWD path
+	
+	git_lfs_verify "$actual_path"
+}
+
 lock_file()
 {
-	echo -e "${RED}\c"
+	echo -e "${DARKRED}\c"
 	echo "=============================="
 	echo "|        Locking File        |"
 	echo "=============================="
@@ -143,8 +191,9 @@ main_menu()
 		echo -e "${CYAN}\c"
 		echo "1. Lock a File"
 		echo "2. Unlock a File"
-		echo "3. View Locked Files"
-		echo "4. View ALL Tracked Files"
+		echo "3. Verify a File"
+		echo "4. View Locked Files"
+		echo "5. View ALL Tracked Files"
 		echo ""
 		echo "0. Exit"
 		echo -e "${NOCOLOR}\c"
@@ -160,8 +209,11 @@ main_menu()
 			unlock_file
 		elif [ "$input" = 3 ]
 		then
-			show_locks
+			verify_file
 		elif [ "$input" = 4 ]
+		then
+			show_locks
+		elif [ "$input" = 5 ]
 		then
 			show_tracked
 		elif [ "$input" = 0 ]
@@ -252,8 +304,9 @@ quick_action_menu()
 		echo -e "${CYAN}\c"
 		echo "1. Lock"
 		echo "2. Unlock"
-		echo "3. View Locked Files"
-		echo "4. View ALL Tracked Files"
+		echo "3. Verify"
+		echo "4. View Locked Files"
+		echo "5. View ALL Tracked Files"
 		echo ""
 		echo "0. Cancel"
 		echo -e "${NOCOLOR}\c"
@@ -283,8 +336,16 @@ quick_action_menu()
 			exit=1
 		elif [ "$input" = 3 ]
 		then
-			show_locks
+			count=0
+			while [ "x${path_array[count]}" != "x" ]
+			do
+				git_lfs_verify "${path_array[count]}"
+				count=$(( $count + 1 ))
+			done
 		elif [ "$input" = 4 ]
+		then
+			show_locks
+		elif [ "$input" = 5 ]
 		then
 			show_tracked
 		elif [ "$input" = 0 ]
@@ -309,7 +370,7 @@ cd $REPO_PATH
 if [ ! -d "$PWD/.git" ]
 then
 	echo "Unable to detect a git repository. (\".git\" not found)"
-	echo "Tips: This script should be placed at the topmost level of the repository."
+	echo "Tips: This script should be placed in LFS-GUI folder located at the topmost level of the repository."
 	echo ""
 	read -n 1 -s -r -p "Press any key to continue..."
 	exit
