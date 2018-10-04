@@ -10,6 +10,7 @@
 
 # Config
 REPO_PATH=".."
+SCRIPT_DIR="$(pwd)"
 PROJECT_DIR="$( cd "$(dirname "../../")" ; pwd -P )"
 PROJECT_NAME="$(basename "${PROJECT_DIR}")"
 SENDTO_PATH="${APPDATA}/Microsoft/Windows/SendTo"
@@ -54,7 +55,7 @@ trap finish EXIT
 title
 
 # Check if the shortcut exists
-if [[ ! -e "${SHORTCUT_NAME}.lnk" ]]
+if [[ ! -e "${SCRIPT_DIR}/${SHORTCUT_NAME}.lnk" ]]
 then
 	echo -e "${RED}[WARNING] ${SHORTCUT_NAME}.lnk is missing and/or cannot be found!${NOCOLOR}"
 	echo -e "${RED}[WARNING] Without the file, the program cannot function properly.${NOCOLOR}"
@@ -84,7 +85,7 @@ echo ""
 echo ""
 
 echo -e "${YELLOW}Initializing ${MAGENTA}LFS_ContextMenu${YELLOW}...${NOCOLOR}"
-cp "./${SHORTCUT_NAME}.lnk" "${SENDTO_PATH}/LFS-GUI ($PROJECT_NAME).lnk"
+cp "${SCRIPT_DIR}/${SHORTCUT_NAME}.lnk" "${SENDTO_PATH}/LFS-GUI ($PROJECT_NAME).lnk"
 
 echo -e "${GREEN}[Context Menu] has started!${NOCOLOR}"
 read -p "Press [Enter] key to close this program..."
