@@ -1,0 +1,4 @@
+theme: jekyll-theme-minimal
+title: LFS-GUI - For non-programmers!
+description: Git LFS Scripts for non-programmers to allow them to learn and use File Locking quicker.
+show_downloads: "true"
