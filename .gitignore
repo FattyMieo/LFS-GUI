@@ -1,0 +1,2 @@
+# Do not track .lnk (Windows Shortcut file)
+*.lnk
