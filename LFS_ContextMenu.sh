@@ -4,8 +4,8 @@
 # LFS CONTEXT MENU	#
 # BY FattyMieo		#
 #					#
-# VERSION: 1.0		#
-# DATE: 04/10/2018	#
+# VERSION: 1.1		#
+# DATE: 05/10/2018	#
 #####################
 
 # Config
@@ -14,7 +14,7 @@ SCRIPT_DIR="$(pwd)"
 PROJECT_DIR="$( cd "$(dirname "../../")" ; pwd -P )"
 PROJECT_NAME="$(basename "${PROJECT_DIR}")"
 SENDTO_PATH="${APPDATA}/Microsoft/Windows/SendTo"
-SHORTCUT_NAME="LFS_GUI_Shortcut"
+SHORTCUT_NAME="LFS_Drop Files Here.bat - Shortcut"
 
 # Color Codes
 RED='\033[1;31m'
@@ -52,24 +52,23 @@ function finish {
 }
 trap finish EXIT
 
-title
-
 # Check if the shortcut exists
 if [[ ! -e "${SCRIPT_DIR}/${SHORTCUT_NAME}.lnk" ]]
 then
-	echo -e "${RED}[WARNING] ${SHORTCUT_NAME}.lnk is missing and/or cannot be found!${NOCOLOR}"
-	echo -e "${RED}[WARNING] Without the file, the program cannot function properly.${NOCOLOR}"
+	echo "Unable to run this script."
+	echo "Reason: \"${SHORTCUT_NAME}.lnk\" is not found."
+	echo ""
+	echo -e "${YELLOW}\c"
+	echo "Installation:"
+	echo -e "  1. Right-click ${MAGENTA}LFS_Drop Files Here.bat${YELLOW} and select ${MAGENTA}Create Shortcut${YELLOW}."
+	echo -e "  2. Name the shortcut ${MAGENTA}\"${SHORTCUT_NAME}\"${YELLOW}."
+	echo -e "${NOCOLOR}\c"
 	echo ""
 	read -n 1 -s -r -p "Press any key to exit..."
 	exit
 fi
 
-echo -e "${YELLOW}\c"
-echo "Installation:"
-echo -e "  1. Find existing ${MAGENTA}${SHORTCUT_NAME}.lnk${YELLOW} or create a new shortcut named ${MAGENTA}${SHORTCUT_NAME}.lnk${YELLOW}."
-echo -e "  2. Set the destination of the shortcut to ${MAGENTA}LFS_Drop Files Here.bat${YELLOW}."
-echo -e "${NOCOLOR}\c"
-echo ""
+title
 
 echo -e "${CYAN}\c"
 echo "Instruction:"
