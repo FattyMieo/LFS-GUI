@@ -30,6 +30,12 @@ title()
 	echo ""
 }
 
+git_fetch()
+{
+	echo -e "${YELLOW}Fetching changes...${NOCOLOR}"
+	git fetch
+}
+
 git_lfs_verify()
 {
 	echo -e "${YELLOW}Verifying ${MAGENTA}${1}${YELLOW}...${NOCOLOR}"
@@ -92,6 +98,7 @@ verify_file()
 	actual_path="${actual_path#./}"			# Remove any . prefix
 	actual_path="${actual_path##$PWD/}"		# Remove PWD path
 	
+	git_fetch
 	git_lfs_verify "$actual_path"
 }
 
@@ -117,6 +124,7 @@ lock_file()
 	actual_path="${actual_path#./}"			# Remove any . prefix
 	actual_path="${actual_path##$PWD/}"		# Remove PWD path
 	
+	git_fetch
 	git_lfs_lock "$actual_path"
 }
 
@@ -316,6 +324,7 @@ quick_action_menu()
 		echo ""
 		  if [ "$input" = 1 ]
 		then
+			git_fetch
 			count=0
 			while [ "x${path_array[count]}" != "x" ]
 			do
@@ -336,6 +345,7 @@ quick_action_menu()
 			exit=1
 		elif [ "$input" = 3 ]
 		then
+			git_fetch
 			count=0
 			while [ "x${path_array[count]}" != "x" ]
 			do
