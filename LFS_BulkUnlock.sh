@@ -4,7 +4,7 @@
 # LFS BULK UNLOCK	#
 # BY FattyMieo		#
 #					#
-# VERSION: 1.0		#
+# VERSION: 1.2		#
 # DATE: 04/10/2018	#
 #####################
 
@@ -19,6 +19,11 @@ YELLOW='\033[1;33m'
 CYAN='\033[1;36m'
 MAGENTA='\033[1;35m'
 NOCOLOR='\033[0m'
+
+clear-inputs()
+{
+	while read -r -t 0; do read -r; done
+}
 
 title()
 {
@@ -37,6 +42,7 @@ then
 	echo "Unable to detect a git repository. (\".git\" not found)"
 	echo "Tips: This script should be placed in LFS-GUI folder located at the topmost level of the repository."
 	echo ""
+	clear-inputs
 	read -n 1 -s -r -p "Press any key to continue..."
 	exit
 fi
@@ -55,6 +61,7 @@ echo "  1. Edit locks.txt and remove all unwanted entries."
 echo "  2. Save locks.txt and return to this window."
 echo -e "${NOCOLOR}\c"
 echo ""
+clear-inputs
 read -n 1 -s -r -p "Press any key to begin..."
 echo ""
 echo ""
@@ -71,6 +78,7 @@ fi
 
 echo ""
 echo -e "${GREEN}[Bulk Unlock] is ready!${NOCOLOR}"
+clear-inputs
 read -p "Press [Enter] key to start..."
 echo ""
 
@@ -84,4 +92,5 @@ while read p; do
 done <locks.txt
 rm ./locks.txt
 echo -e "${YELLOW}Removed ${MAGENTA}locks.txt${YELLOW}!${NOCOLOR}"
+clear-inputs
 read -n 1 -s -r -p "Press any key to continue..."

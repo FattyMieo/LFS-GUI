@@ -4,7 +4,7 @@
 # LFS CONTEXT MENU	#
 # BY FattyMieo		#
 #					#
-# VERSION: 1.1		#
+# VERSION: 1.2		#
 # DATE: 05/10/2018	#
 #####################
 
@@ -25,6 +25,11 @@ CYAN='\033[1;36m'
 MAGENTA='\033[1;35m'
 NOCOLOR='\033[0m'
 
+clear-inputs()
+{
+	while read -r -t 0; do read -r; done
+}
+
 title()
 {
 	echo -e "${YELLOW}\c"
@@ -42,6 +47,7 @@ then
 	echo "Unable to detect a git repository. (\".git\" not found)"
 	echo "Tips: This script should be placed in LFS-GUI folder located at the topmost level of the repository."
 	echo ""
+	clear-inputs
 	read -n 1 -s -r -p "Press any key to continue..."
 	exit
 fi
@@ -64,6 +70,7 @@ then
 	echo -e "  2. Name the shortcut ${MAGENTA}\"${SHORTCUT_NAME}\"${YELLOW}."
 	echo -e "${NOCOLOR}\c"
 	echo ""
+	clear-inputs
 	read -n 1 -s -r -p "Press any key to exit..."
 	exit
 fi
@@ -85,4 +92,5 @@ cp "${SCRIPT_DIR}/${SHORTCUT_NAME}.lnk" "${SENDTO_PATH}/LFS-GUI ($PROJECT_NAME).
 
 echo -e "${GREEN}[Context Menu] has started!${NOCOLOR}"
 echo ""
+clear-inputs
 read -p "Press [Enter] key to close this program..."

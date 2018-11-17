@@ -4,7 +4,7 @@
 # LFS GUI			#
 # BY FattyMieo		#
 #					#
-# VERSION: 2.0		#
+# VERSION: 2.2		#
 # DATE: 04/10/2018	#
 #####################
 
@@ -19,6 +19,11 @@ YELLOW='\033[1;33m'
 CYAN='\033[1;36m'
 MAGENTA='\033[1;35m'
 NOCOLOR='\033[0m'
+
+clear-inputs()
+{
+	while read -r -t 0; do read -r; done
+}
 
 title()
 {
@@ -89,6 +94,7 @@ verify_file()
 	echo "Type in the file's path:"
 	echo -e "${NOCOLOR}\c"
 	echo ""
+	clear-inputs
 	read -e -p "\$ git lfs verify " input
 	echo ""
 	
@@ -115,6 +121,7 @@ lock_file()
 	echo "Type in the file's path:"
 	echo -e "${NOCOLOR}\c"
 	echo ""
+	clear-inputs
 	read -e -p "\$ git lfs lock " input
 	echo ""
 	
@@ -141,6 +148,7 @@ unlock_file()
 	echo "Type in the file's path (or \"--id=<lock_id>\"):"
 	echo -e "${NOCOLOR}\c"
 	echo ""
+	clear-inputs
 	read -e -p "\$ git lfs unlock " input
 	echo ""
 	
@@ -206,6 +214,7 @@ main_menu()
 		echo "0. Exit"
 		echo -e "${NOCOLOR}\c"
 		echo ""
+		clear-inputs
 		read -e -p "\$ " input
 
 		echo ""
@@ -319,6 +328,7 @@ quick_action_menu()
 		echo "0. Cancel"
 		echo -e "${NOCOLOR}\c"
 		echo ""
+		clear-inputs
 		read -e -p "\$ " input
 
 		echo ""
@@ -370,6 +380,7 @@ quick_action_menu()
 		
 		if [ $exit = 1 ]
 		then
+			clear-inputs
 			read -n 1 -s -r -p "Press any key to continue..."
 		fi
 	done
@@ -382,6 +393,7 @@ then
 	echo "Unable to detect a git repository. (\".git\" not found)"
 	echo "Tips: This script should be placed in LFS-GUI folder located at the topmost level of the repository."
 	echo ""
+	clear-inputs
 	read -n 1 -s -r -p "Press any key to continue..."
 	exit
 fi
